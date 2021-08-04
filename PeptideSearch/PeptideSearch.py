@@ -133,7 +133,7 @@ class PeptideSearch():
                         s1= db['sequence'][idx].find(str1)
                         s2= db['sequence'][idx].find(str2)
                         if s2==(s1+len(str1)+1) or s1==0 or s2==0:
-                            start_ends= s2
+                            start_ends= s1
                             dfrelay1 = dfrelay1.append({'Peptide':strp, 'geneid/s':geneid, 'start/s':start_ends, 'ExactMatch/OneMismatch':'OneMismatch'}, ignore_index=True)
                             df=df.append(dfrelay1,ignore_index=True)
                         else:
@@ -147,11 +147,28 @@ class PeptideSearch():
         df, pList= self.ExactMatch()
         df2, N= self.OneMismatch(pList)
         dffinal= df.append(df2, ignore_index=True)
+        dffinal.to_csv(str(self.Fasta_File)+"Matches.csv")
         return dffinal, N
-        
     
-
-
+    def SequenceSearch(Peptide, Sequence):
+        Result, Index= -1, -1 
+        i= Sequence.find(Peptide)
+        if i>=0:
+            Index=i
+            Result=0
+            return Result, Index
+        
+        for q in range(len(Peptide)):
+            str1= Peptide[0:q]
+            str2= Peptide[q+1:]
+            s1= Sequence.find(str1)
+            s2= Sequence.find(str2)
+            if s2==(s1+len(str1)+1) or s1==0 or s2==0:
+                Result=1
+                Index= s1
+                return Result, Index  
+        return Result, Index  
+                    
 
 # p= PeptideSearch("Peptides.txt", "Test.fasta",)
 # df, pList= p.ExactMatch()
