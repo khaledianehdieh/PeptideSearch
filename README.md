@@ -11,7 +11,7 @@ This tool consists one module:
 ## Normal installation
 
 ```bash
-pip install PeptideSearch
+pip install PeptidesSearch
 ```
 
 ## Development installation
