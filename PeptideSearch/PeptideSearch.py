@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 10 14:09:59 2021
+
+@author: ekhaledian
+"""
+
 
 import pandas as pd
 import numpy as np
@@ -51,6 +59,8 @@ class PeptideSearch():
         return df2
     
     def read_Peptides(self):
+        if type(self.Peptides)==list:
+            return self.Peptides
         file1 = open(self.Peptides, 'r')
         Lines = file1.readlines()
         Lines= [i.strip() for i in Lines]
@@ -101,14 +111,16 @@ class PeptideSearch():
             while(Occurances>0):
                 b= string_index[j]
                 Occurances = Occurances-1
-                geneid= db['geneid'][b]
+                geneid= db['geneid'][b][1:]
                 start_ends = str(start_index[j])+ '--'+ str(start_index[j]+len(lista[i]))
                 j=j+1
                 df = df.append({'Peptide':lista[i],'geneid/s':geneid, 'start/s':start_ends, 'ExactMatch/OneMismatch':'ExactMatch'}, ignore_index=True)
         return df, pList
 
 
-    def OneMismatch(self, peptides):
+    def OneMismatch(self, peptides=[]):
+        if len(peptides)==0:
+            peptides= self.read_Peptides()
 
         db=self.FastatoCsv()
         DBString=db['sequence']
@@ -129,7 +141,7 @@ class PeptideSearch():
                     #check for the same sequence
                     if(len(common)>0):
                         idx= common.pop()
-                        geneid = db['geneid'][idx]
+                        geneid = db['geneid'][idx][1:]
                         s1= db['sequence'][idx].find(str1)
                         s2= db['sequence'][idx].find(str2)
                         if s2==(s1+len(str1)+1) or s1==0 or s2==0:
@@ -150,11 +162,12 @@ class PeptideSearch():
         dffinal.to_csv(str(self.Fasta_File)+"Matches.csv")
         return dffinal, N
     
+
     def SequenceSearch(Peptide, Sequence):
         Result, Index= -1, -1 
-        i= Sequence.find(Peptide)
-        if i>=0:
-            Index=i
+        x= Sequence.find(Peptide)
+        if x>=0:
+            Index=x
             Result=0
             return Result, Index
         
@@ -163,16 +176,26 @@ class PeptideSearch():
             str2= Peptide[q+1:]
             s1= Sequence.find(str1)
             s2= Sequence.find(str2)
-            if s2==(s1+len(str1)+1) or s1==0 or s2==0:
+
+            if len(str1)==0 and s2>=0:
+                Result=1
+                if (s2>0):
+                    Index=s2-1
+                else:
+                    Index=0
+            elif len(str2)==0 and s1>=0:
+                Result=1
+                Index=s1
+            elif s2==(s1+len(str1)+1):
                 Result=1
                 Index= s1
-                return Result, Index  
-        return Result, Index  
+        return Result, Index   
                     
 
-# p= PeptideSearch("Peptides.txt", "Test.fasta",)
+# List=["ACH", "K"]
+# p= PeptideSearch(List, "Test.fasta",)
 # df, pList= p.ExactMatch()
-# df2, N= p.OneMismatch(pList)
-# d, s= p.MatchFinder()
+# df2, N= p.OneMismatch(List)
+# d, s= PeptideSearch.SequenceSearchs("sl", "abcsm")
 
 
